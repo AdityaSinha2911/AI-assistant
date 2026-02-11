@@ -3,7 +3,7 @@ import webbrowser
 import pyttsx3
 import musicLibrary
 
-# recognizer=sr.Recognizer()
+recognizer=sr.Recognizer()
 
 #pyttsx3.. it will convert text to speech
 engine=pyttsx3.init()
@@ -47,9 +47,9 @@ if __name__=="__main__":
             # program is hearing our voice 
             with sr.Microphone() as source:
                 print("Recognizing ... ")
-                recognizer.adjust_for_ambient_noise(source,duration=0.5)
-                # audio = r.listen(source,timeout=2,phrase_time_limit=1)
-                audio=r.listen(source)
+                recognizer.adjust_for_ambient_noise(source,duration=1)
+                audio = recognizer.listen(source, timeout=3, phrase_time_limit=5)
+
             word=r.recognize_google(audio)
             print(word)
             
