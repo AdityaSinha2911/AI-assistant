@@ -2,7 +2,7 @@ import speech_recognition as sr
 import webbrowser
 import pyttsx3
 import musicLibrary
-
+import datetime
 from openai import OpenAI
 
 recognizer=sr.Recognizer()
@@ -15,33 +15,57 @@ def speak(text):
     engine.say(text)
     engine.runAndWait()
 
+client = OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key="your_key"
+)
+
+conversation = [
+    {
+        "role": "system",
+        "content": "You are Jarvis assistant"
+    }
+]
+
+# it will store the conversation for further talks
+
+def logConversation(user, assistant):
+
+    with open("logs.txt", "a") as file:
+        file.write(f"{datetime.datetime.now()}\n")
+        file.write(f"User: {user}\n")
+        file.write(f"Assistant: {assistant}\n\n")
+
+
 # I used OpenROuter API key:--
 
 def aiProcess(command):
 
-    client = OpenAI(
-        base_url="https://openrouter.ai/api/v1",
+    try:
+        conversation.append({
+            "role": "user",
+            "content": command
+        })
 
-        # paste your own api key
-        api_key="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"
-    )
+        completion = client.chat.completions.create(
+            model="mistralai/mistral-7b-instruct",
+            messages=conversation
+        )
 
-    completion = client.chat.completions.create(
-        model="mistralai/mistral-7b-instruct",
+        reply = completion.choices[0].message.content
 
-        messages=[
-            {
-                "role": "system",
-                "content": "You are a virtual assistant named Jarvis skilled in general tasks like Alexa, And give response in short."
-            },
-            {
-                "role": "user",
-                "content": command
-            }
-        ]
-    )
+        conversation.append({
+            "role": "assistant",
+            "content": reply
+        })
 
-    return completion.choices[0].message.content
+        # storing chats for further assistance
+        logConversation(command, reply)
+
+        return reply
+
+    except Exception:
+        return "Network issue occurred"
 
 
 #here we are defining basic pre defined task
