@@ -3,6 +3,8 @@ import webbrowser
 import pyttsx3
 import musicLibrary
 
+from openai import OpenAI
+
 recognizer=sr.Recognizer()
 
 #pyttsx3.. it will convert text to speech
@@ -12,6 +14,35 @@ engine=pyttsx3.init()
 def speak(text):
     engine.say(text)
     engine.runAndWait()
+
+# I used OpenROuter API key:--
+
+def aiProcess(command):
+
+    client = OpenAI(
+        base_url="https://openrouter.ai/api/v1",
+
+        # paste your own api key
+        api_key="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"
+    )
+
+    completion = client.chat.completions.create(
+        model="mistralai/mistral-7b-instruct",
+
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a virtual assistant named Jarvis skilled in general tasks like Alexa, And give response in short."
+            },
+            {
+                "role": "user",
+                "content": command
+            }
+        ]
+    )
+
+    return completion.choices[0].message.content
+
 
 #here we are defining basic pre defined task
 def processCommand(c):
@@ -30,6 +61,12 @@ def processCommand(c):
         link=musicLibrary.music[song]
         webbrowser.open(link)
 
+    # integration of AI 
+
+    else:
+        output=aiProcess(c)
+        speak(output)
+        pass
 
 
 if __name__=="__main__":
