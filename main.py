@@ -114,15 +114,19 @@ if __name__=="__main__":
             word=r.recognize_google(audio)
             print(word)
             
-            if(word.lower()=="jarvis" or word.lower()=="hello"):
+            #giving only one  wake up word 
+            if(word.lower()=="jarvis"):
                 speak("Yes..")
+
+#some minimal changes are done
 
                 # now the step 2 will begin
                 #it will work as per pre defined commands
 
                 with sr.Microphone() as source:
                     print("Jarvis Active ... ")
-                    audio = r.listen(source,timeout=2,phrase_time_limit=1)
+                    #phrase time limit increased from 1 to 5.
+                    audio = r.listen(source,timeout=2,phrase_time_limit=5)
                     command=r.recognize_google(audio)
 
                 #refer the given command to out process command function
