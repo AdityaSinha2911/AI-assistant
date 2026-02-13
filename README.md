@@ -12,6 +12,7 @@ It listens for the wake word **“Jarvis”** and performs basic predefined task
 * Opens websites like Google, YouTube, and LeetCode
 * Plays songs from a predefined music library
 * Wake word activation (“Jarvis”)
+* Store your chat information for that very time
 
 ---
 
@@ -23,17 +24,9 @@ Install the following Python libraries:
 pip install SpeechRecognition
 pip install pyttsx3
 pip install pyaudio
+pip install requests
 ```
 
-⚠️ Note:
-If `pyaudio` fails to install, try:
-
-```bash
-pip install pipwin
-pipwin install pyaudio
-```
-
----
 
 ## ▶️ How to Run
 
