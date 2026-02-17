@@ -3,12 +3,39 @@ import webbrowser
 import pyttsx3
 import musicLibrary
 import datetime
+import threading
+import tkinter as tk
 from openai import OpenAI
 
 recognizer=sr.Recognizer()
 
 #pyttsx3.. it will convert text to speech
 engine=pyttsx3.init()
+
+
+# Function that listens to microphone
+def listen(output_text, status_label):
+    try:
+        with sr.Microphone() as source:
+            status_label.config(text="Listening...")
+            recognizer.adjust_for_ambient_noise(source, duration=1)
+            audio = recognizer.listen(source, timeout=5, phrase_time_limit=5)
+
+        text = recognizer.recognize_google(audio)
+
+        # Update GUI safely using after()
+        output_text.after(0, lambda: output_text.insert(tk.END, "You: " + text + "\n"))
+        status_label.after(0, lambda: status_label.config(text="Recognized"))
+
+    except sr.WaitTimeoutError:
+        status_label.after(0, lambda: status_label.config(text="Listening Timeout"))
+
+    except sr.UnknownValueError:
+        output_text.after(0, lambda: output_text.insert(tk.END, "Could not understand\n"))
+        status_label.after(0, lambda: status_label.config(text="Error"))
+
+    except Exception:
+        status_label.after(0, lambda: status_label.config(text="Network Error"))
 
 # speak function declared
 def speak(text):
