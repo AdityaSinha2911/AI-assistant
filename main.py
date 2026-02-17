@@ -13,45 +13,11 @@ recognizer=sr.Recognizer()
 engine=pyttsx3.init()
 
 
-# Function that listens to microphone
-def listen(output_text, status_label):
-    try:
-        with sr.Microphone() as source:
-            status_label.config(text="Listening...")
-            recognizer.adjust_for_ambient_noise(source, duration=1)
-            audio = recognizer.listen(source, timeout=5, phrase_time_limit=5)
-
-        text = recognizer.recognize_google(audio)
-
-        # Update GUI safely using after()
-        output_text.after(0, lambda: output_text.insert(tk.END, "You: " + text + "\n"))
-        status_label.after(0, lambda: status_label.config(text="Recognized"))
-
-    except sr.WaitTimeoutError:
-        status_label.after(0, lambda: status_label.config(text="Listening Timeout"))
-
-    except sr.UnknownValueError:
-        output_text.after(0, lambda: output_text.insert(tk.END, "Could not understand\n"))
-        status_label.after(0, lambda: status_label.config(text="Error"))
-
-    except Exception:
-        status_label.after(0, lambda: status_label.config(text="Network Error"))
-
-
-# Function to start thread
-def start_listening(output_text, status_label):
-    thread = threading.Thread(
-        target=listen,
-        args=(output_text, status_label)
-    )
-    thread.daemon = True   # Thread closes when program closes
-    thread.start()
-
-
 # speak function declared
 def speak(text):
     engine.say(text)
     engine.runAndWait()
+
 
 client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
@@ -66,7 +32,6 @@ conversation = [
 ]
 
 # it will store the conversation for further talks
-
 def logConversation(user, assistant):
 
     with open("logs.txt", "a") as file:
@@ -76,7 +41,6 @@ def logConversation(user, assistant):
 
 
 # I used OpenROuter API key:--
-
 def aiProcess(command):
 
     try:
@@ -108,6 +72,7 @@ def aiProcess(command):
 
 #here we are defining basic pre defined task
 def processCommand(c):
+
     if "open google" in c.lower():
         webbrowser.open("https://google.com")
 
@@ -124,11 +89,51 @@ def processCommand(c):
         webbrowser.open(link)
 
     # integration of AI 
-
     else:
         output=aiProcess(c)
         speak(output)
-        pass
+        return output
+
+
+# Function that listens to microphone
+def listen(output_text, status_label):
+
+    try:
+        with sr.Microphone() as source:
+            status_label.config(text="Listening...")
+            recognizer.adjust_for_ambient_noise(source, duration=1)
+            audio = recognizer.listen(source, timeout=5, phrase_time_limit=5)
+
+        text = recognizer.recognize_google(audio)
+
+        output_text.after(0, lambda: output_text.insert(tk.END, "You: " + text + "\n"))
+        status_label.after(0, lambda: status_label.config(text="Recognized"))
+
+        response = processCommand(text)
+
+        if response:
+            output_text.after(0, lambda: output_text.insert(tk.END, "Jarvis: " + response + "\n"))
+
+    except sr.WaitTimeoutError:
+        status_label.after(0, lambda: status_label.config(text="Listening Timeout"))
+
+    except sr.UnknownValueError:
+        output_text.after(0, lambda: output_text.insert(tk.END, "Could not understand\n"))
+        status_label.after(0, lambda: status_label.config(text="Error"))
+
+    except Exception:
+        status_label.after(0, lambda: status_label.config(text="Network Error"))
+
+
+# Function to start thread
+def start_listening(output_text, status_label):
+
+    thread = threading.Thread(
+        target=listen,
+        args=(output_text, status_label)
+    )
+    thread.daemon = True
+    thread.start()
 
 
 if __name__=="__main__":
@@ -136,40 +141,24 @@ if __name__=="__main__":
 
     speak("Initializing Jarvis .... ")
 
-# an infinite loop is created to always listen our words
+# Tkinter GUI starts here
 
-    while True:
-        print("Listening...")        
-        r = sr.Recognizer()
+    root = tk.Tk()
+    root.title("Jarvis Assistant")
+    root.geometry("450x450")
 
-        try:
-            # program is hearing our voice 
-            with sr.Microphone() as source:
-                print("Recognizing ... ")
-                recognizer.adjust_for_ambient_noise(source,duration=1)
-                audio = recognizer.listen(source, timeout=3, phrase_time_limit=5)
+    output_text = tk.Text(root, height=18, width=55)
+    output_text.pack(pady=10)
 
-            word=r.recognize_google(audio)
-            print(word)
-            
-            #giving only one  wake up word 
-            if(word.lower()=="jarvis"):
-                speak("Yes..")
+    status_label = tk.Label(root, text="Idle", fg="blue")
+    status_label.pack(pady=5)
 
-#some minimal changes are done
+    mic_button = tk.Button(
+        root,
+        text="🎤",
+        font=("Arial", 20),
+        command=lambda: start_listening(output_text, status_label)
+    )
+    mic_button.pack(pady=10)
 
-                # now the step 2 will begin
-                #it will work as per pre defined commands
-
-                with sr.Microphone() as source:
-                    print("Jarvis Active ... ")
-                    #phrase time limit increased from 1 to 5.
-                    audio = r.listen(source,timeout=2,phrase_time_limit=5)
-                    command=r.recognize_google(audio)
-
-                #refer the given command to out process command function
-                    processCommand(command)
-
-# to deal with any unusual type of error
-        except Exception as e:
-            print("error;{0}".format(e))
+    root.mainloop()
