@@ -37,6 +37,17 @@ def listen(output_text, status_label):
     except Exception:
         status_label.after(0, lambda: status_label.config(text="Network Error"))
 
+
+# Function to start thread
+def start_listening(output_text, status_label):
+    thread = threading.Thread(
+        target=listen,
+        args=(output_text, status_label)
+    )
+    thread.daemon = True   # Thread closes when program closes
+    thread.start()
+
+
 # speak function declared
 def speak(text):
     engine.say(text)
